@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chúc Mừng Năm Mới em Pô và mẹ Huệ!</title>
+  <title>Chúc Mừng Năm Mới Pô!</title>
   <style>
     body {
       margin: 0;
@@ -21,12 +21,37 @@
       position: relative;
       z-index: 10;
       font-size: 3rem;
-      animation: fadeIn 3s ease-in-out;
+      display: flex;
+      justify-content: center;
+      gap: 0.2rem;
+      flex-wrap: wrap;
     }
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
+    h1 span {
+      opacity: 0;
+      animation: fadeInLetter 0.5s ease-in forwards;
     }
+    h1 span:nth-child(1) { animation-delay: 0.1s; }
+    h1 span:nth-child(2) { animation-delay: 0.2s; }
+    h1 span:nth-child(3) { animation-delay: 0.3s; }
+    h1 span:nth-child(4) { animation-delay: 0.4s; }
+    h1 span:nth-child(5) { animation-delay: 0.5s; }
+    h1 span:nth-child(6) { animation-delay: 0.6s; }
+    h1 span:nth-child(7) { animation-delay: 0.7s; }
+    h1 span:nth-child(8) { animation-delay: 0.8s; }
+    h1 span:nth-child(9) { animation-delay: 0.9s; }
+    h1 span:nth-child(10) { animation-delay: 1s; }
+    h1 span:nth-child(11) { animation-delay: 1.1s; }
+    h1 span:nth-child(12) { animation-delay: 1.2s; }
+    h1 span:nth-child(13) { animation-delay: 1.3s; }
+    h1 span:nth-child(14) { animation-delay: 1.4s; }
+    h1 span:nth-child(15) { animation-delay: 1.5s; }
+    h1 span:nth-child(16) { animation-delay: 1.6s; }
+
+    @keyframes fadeInLetter {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     .firework {
       position: absolute;
       width: 100%;
@@ -35,7 +60,13 @@
   </style>
 </head>
 <body>
-  <h1>Chúc Mừng Năm Mới, Pô! 🎉✨</h1>
+  <h1>
+    <span>C</span><span>h</span><span>ú</span><span>c</span>
+    <span>M</span><span>ừ</span><span>n</span><span>g</span>
+    <span>N</span><span>ă</span><span>m</span>
+    <span>M</span><span>ớ</span><span>i</span>
+    <span>P</span><span>ô</span>
+  </h1>
   <canvas class="firework"></canvas>
   <script>
     const canvas = document.querySelector('.firework');
@@ -44,44 +75,67 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    class Firework {
+    class Particle {
       constructor(x, y, color) {
         this.x = x;
         this.y = y;
         this.color = color;
+        this.size = Math.random() * 3 + 1;
+        this.vx = (Math.random() - 0.5) * 6;
+        this.vy = (Math.random() - 0.5) * 6;
+        this.alpha = 1;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= 0.01;
+      }
+
+      draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    class Firework {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
         this.particles = [];
+        this.colors = [
+          "#ff5757",
+          "#ff9d00",
+          "#fff700",
+          "#5eff5e",
+          "#57aaff",
+          "#9d57ff",
+        ];
         this.createParticles();
       }
 
       createParticles() {
         const particleCount = 100;
         for (let i = 0; i < particleCount; i++) {
-          const angle = (Math.PI * 2) / particleCount * i;
-          const speed = Math.random() * 4 + 1;
-          const vx = Math.cos(angle) * speed;
-          const vy = Math.sin(angle) * speed;
-          this.particles.push({ x: this.x, y: this.y, vx, vy, alpha: 1 });
+          const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+          this.particles.push(new Particle(this.x, this.y, color));
         }
       }
 
-      updateParticles() {
-        this.particles.forEach((particle) => {
-          particle.x += particle.vx;
-          particle.y += particle.vy;
-          particle.alpha -= 0.01;
+      update() {
+        this.particles.forEach((particle, index) => {
+          particle.update();
+          if (particle.alpha <= 0) {
+            this.particles.splice(index, 1);
+          }
         });
-
-        this.particles = this.particles.filter(particle => particle.alpha > 0);
       }
 
-      drawParticles() {
-        this.particles.forEach((particle) => {
-          ctx.globalAlpha = particle.alpha;
-          ctx.beginPath();
-          ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = this.color;
-          ctx.fill();
-        });
+      draw() {
+        this.particles.forEach(particle => particle.draw());
       }
     }
 
@@ -90,15 +144,14 @@
     function createFirework() {
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height / 2;
-      const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-      fireworks.push(new Firework(x, y, color));
+      fireworks.push(new Firework(x, y));
     }
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       fireworks.forEach((firework, index) => {
-        firework.updateParticles();
-        firework.drawParticles();
+        firework.update();
+        firework.draw();
 
         if (firework.particles.length === 0) {
           fireworks.splice(index, 1);
@@ -108,7 +161,7 @@
       requestAnimationFrame(animate);
     }
 
-    setInterval(createFirework, 500);
+    setInterval(createFirework, 600);
     animate();
   </script>
 </body>
